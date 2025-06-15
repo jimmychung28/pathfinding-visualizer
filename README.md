@@ -8,6 +8,7 @@ A React-based interactive visualization tool for multiple pathfinding algorithms
 - Multiple pathfinding algorithms: Dijkstra's, A*, BFS, DFS, and Greedy Best-First Search
 - Step-by-step visualization of algorithm execution
 - Shows the path found by each algorithm (shortest for optimal algorithms)
+- **Algorithm performance comparison metrics** with detailed statistics
 - Predefined start and finish nodes
 - Smooth animations for algorithm execution
 
@@ -21,6 +22,8 @@ A React-based interactive visualization tool for multiple pathfinding algorithms
    - **DFS Algorithm** - Finds a path (not necessarily shortest), depth-first exploration
    - **Greedy Best-First** - Fast but not optimal, heads directly toward goal
 3. Watch as the algorithm explores nodes (blue) and then highlights the path found (yellow)
+4. View performance metrics table to compare algorithm efficiency and optimality
+5. Use "Clear Metrics" to reset the comparison data
 
 ## Getting Started
 
@@ -82,6 +85,28 @@ The visualizer implements multiple pathfinding algorithms:
 - Can get trapped by obstacles due to greedy nature
 - More direct approach but may miss better paths
 
+## Performance Metrics
+
+The visualizer tracks and displays comprehensive performance statistics for algorithm comparison:
+
+### **Tracked Metrics**
+- **Nodes Visited**: Total number of nodes explored by the algorithm
+- **Path Length**: Number of nodes in the final path found
+- **Execution Time**: Algorithm runtime in milliseconds
+- **Timestamp**: When the algorithm was executed
+
+### **Comparison Insights**
+- **Efficiency**: Compare how many nodes different algorithms visit
+- **Optimality**: See which algorithms find the shortest paths
+- **Speed**: Observe execution time differences between algorithms
+- **Consistency**: Run algorithms multiple times to see performance variation
+
+### **Example Comparisons**
+- **A* vs Dijkstra**: A* typically visits fewer nodes due to heuristic guidance
+- **BFS vs DFS**: BFS guarantees shortest path, DFS may find suboptimal paths
+- **Greedy vs A***: Greedy is faster but may miss optimal solutions
+- **Algorithm Selection**: Choose the best algorithm based on your priorities (speed vs optimality)
+
 ## Grid Layout
 
 - **Green Node**: Start position (row 10, column 15)
@@ -104,4 +129,5 @@ Potential additions could include:
 - Adjustable grid size and animation speed
 - Moveable start/finish nodes
 - Weighted terrain costs
-- Algorithm performance comparison metrics
+- Export metrics data to CSV/JSON
+- Real-time performance graphs and charts
