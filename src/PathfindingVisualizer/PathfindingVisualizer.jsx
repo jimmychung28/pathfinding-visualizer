@@ -4,6 +4,7 @@ import {dijkstra, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 import {astar, getNodesInShortestPathOrder as getAstarPath} from '../algorithms/astar';
 import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs';
 import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
+import {greedyBestFirst, getNodesInShortestPathOrder as getGreedyPath} from '../algorithms/greedyBestFirst';
 
 import './PathfindingVisualizer.css';
 
@@ -115,6 +116,22 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  animateGreedy(visitedNodesInOrder, nodesInShortestPathOrder) {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      if (i === visitedNodesInOrder.length) {
+        setTimeout(() => {
+          this.animateShortestPath(nodesInShortestPathOrder);
+        }, 10 * i);
+        return;
+      }
+      setTimeout(() => {
+        const node = visitedNodesInOrder[i];
+        document.getElementById(`node-${node.row}-${node.col}`).className =
+          'node node-visited';
+      }, 10 * i);
+    }
+  }
+
   visualizeDijkstra() {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
@@ -151,6 +168,15 @@ export default class PathfindingVisualizer extends Component {
     this.animateDfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  visualizeGreedy() {
+    const {grid} = this.state;
+    const startNode = grid[START_NODE_ROW][START_NODE_COL];
+    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const visitedNodesInOrder = greedyBestFirst(grid, startNode, finishNode);
+    const nodesInShortestPathOrder = getGreedyPath(finishNode);
+    this.animateGreedy(visitedNodesInOrder, nodesInShortestPathOrder);
+  }
+
   render() {
     const {grid, mouseIsPressed} = this.state;
 
@@ -167,6 +193,9 @@ export default class PathfindingVisualizer extends Component {
         </button>
         <button onClick={() => this.visualizeDfs()}>
           Visualize DFS Algorithm
+        </button>
+        <button onClick={() => this.visualizeGreedy()}>
+          Visualize Greedy Best-First
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
@@ -219,6 +248,7 @@ const createNode = (col, row) => {
     isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
     distance: Infinity,
     totalDistance: Infinity,
+    heuristic: Infinity,
     isVisited: false,
     isWall: false,
     previousNode: null,
