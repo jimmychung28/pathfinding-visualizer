@@ -117,8 +117,8 @@ The visualizer tracks and displays comprehensive performance statistics for algo
 
 ## Built With
 
-- React 16.10.1
-- Create React App
+- React 18.2.0
+- Create React App (React Scripts 5.0.1)
 - CSS3 for styling and animations
 
 ## Future Enhancements
