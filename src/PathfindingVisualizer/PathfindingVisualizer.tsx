@@ -5,6 +5,7 @@ import {astar, getNodesInShortestPathOrder as getAstarPath} from '../algorithms/
 import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs';
 import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
 import {greedyBestFirst, getNodesInShortestPathOrder as getGreedyPath} from '../algorithms/greedyBestFirst';
+import { GridNode, Grid, AlgorithmMetric } from '../types';
 
 import './PathfindingVisualizer.css';
 
@@ -13,9 +14,15 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
-export default class PathfindingVisualizer extends Component {
-  constructor() {
-    super();
+interface PathfindingVisualizerState {
+  grid: Grid;
+  mouseIsPressed: boolean;
+  algorithmMetrics: AlgorithmMetric[];
+}
+
+export default class PathfindingVisualizer extends Component<{}, PathfindingVisualizerState> {
+  constructor(props: {}) {
+    super(props);
     this.state = {
       grid: [],
       mouseIsPressed: false,
@@ -23,27 +30,27 @@ export default class PathfindingVisualizer extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const grid = getInitialGrid();
     this.setState({grid});
   }
 
-  handleMouseDown(row, col) {
+  handleMouseDown(row: number, col: number): void {
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
   }
 
-  handleMouseEnter(row, col) {
+  handleMouseEnter(row: number, col: number): void {
     if (!this.state.mouseIsPressed) return;
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid});
   }
 
-  handleMouseUp() {
+  handleMouseUp(): void {
     this.setState({mouseIsPressed: false});
   }
 
-  animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animateDijkstra(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
@@ -53,23 +60,23 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
       }, 10 * i);
     }
   }
 
-  animateShortestPath(nodesInShortestPathOrder) {
+  animateShortestPath(nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
         const node = nodesInShortestPathOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-shortest-path';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-shortest-path';
       }, 50 * i);
     }
   }
 
-  animateAstar(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animateAstar(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
@@ -79,13 +86,13 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
       }, 10 * i);
     }
   }
 
-  animateBfs(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animateBfs(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
@@ -95,13 +102,13 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
       }, 10 * i);
     }
   }
 
-  animateDfs(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animateDfs(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
@@ -111,13 +118,13 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
       }, 10 * i);
     }
   }
 
-  animateGreedy(visitedNodesInOrder, nodesInShortestPathOrder) {
+  animateGreedy(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
@@ -127,14 +134,14 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
       }, 10 * i);
     }
   }
 
-  recordMetrics(algorithmName, visitedNodes, pathNodes, executionTime) {
-    const metric = {
+  recordMetrics(algorithmName: string, visitedNodes: GridNode[], pathNodes: GridNode[], executionTime: number): void {
+    const metric: AlgorithmMetric = {
       algorithm: algorithmName,
       nodesVisited: visitedNodes.length,
       pathLength: pathNodes.length,
@@ -147,11 +154,11 @@ export default class PathfindingVisualizer extends Component {
     }));
   }
 
-  clearMetrics() {
+  clearMetrics(): void {
     this.setState({algorithmMetrics: []});
   }
 
-  visualizeDijkstra() {
+  visualizeDijkstra(): void {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -165,7 +172,7 @@ export default class PathfindingVisualizer extends Component {
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
-  visualizeAstar() {
+  visualizeAstar(): void {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -179,7 +186,7 @@ export default class PathfindingVisualizer extends Component {
     this.animateAstar(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
-  visualizeBfs() {
+  visualizeBfs(): void {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -193,7 +200,7 @@ export default class PathfindingVisualizer extends Component {
     this.animateBfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
-  visualizeDfs() {
+  visualizeDfs(): void {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -207,7 +214,7 @@ export default class PathfindingVisualizer extends Component {
     this.animateDfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
-  visualizeGreedy() {
+  visualizeGreedy(): void {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -305,10 +312,10 @@ export default class PathfindingVisualizer extends Component {
   }
 }
 
-const getInitialGrid = () => {
-  const grid = [];
+const getInitialGrid = (): Grid => {
+  const grid: Grid = [];
   for (let row = 0; row < 20; row++) {
-    const currentRow = [];
+    const currentRow: GridNode[] = [];
     for (let col = 0; col < 50; col++) {
       currentRow.push(createNode(col, row));
     }
@@ -317,7 +324,7 @@ const getInitialGrid = () => {
   return grid;
 };
 
-const createNode = (col, row) => {
+const createNode = (col: number, row: number): GridNode => {
   return {
     col,
     row,
@@ -332,10 +339,10 @@ const createNode = (col, row) => {
   };
 };
 
-const getNewGridWithWallToggled = (grid, row, col) => {
+const getNewGridWithWallToggled = (grid: Grid, row: number, col: number): Grid => {
   const newGrid = grid.slice();
   const node = newGrid[row][col];
-  const newNode = {
+  const newNode: GridNode = {
     ...node,
     isWall: !node.isWall,
   };

@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
+import { NodeProps } from '../../types';
 
 import './Node.css';
 
-export default class Node extends Component {
+export default class Node extends Component<NodeProps> {
   render() {
     const {
       col,
