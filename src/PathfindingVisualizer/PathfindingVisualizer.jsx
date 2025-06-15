@@ -19,6 +19,7 @@ export default class PathfindingVisualizer extends Component {
     this.state = {
       grid: [],
       mouseIsPressed: false,
+      algorithmMetrics: [],
     };
   }
 
@@ -132,12 +133,35 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  recordMetrics(algorithmName, visitedNodes, pathNodes, executionTime) {
+    const metric = {
+      algorithm: algorithmName,
+      nodesVisited: visitedNodes.length,
+      pathLength: pathNodes.length,
+      executionTime: Math.round(executionTime * 100) / 100,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    this.setState(prevState => ({
+      algorithmMetrics: [...prevState.algorithmMetrics, metric]
+    }));
+  }
+
+  clearMetrics() {
+    this.setState({algorithmMetrics: []});
+  }
+
   visualizeDijkstra() {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    
+    const startTime = performance.now();
     const visitedNodesInOrder = dijkstra(grid, startNode, finishNode);
     const nodesInShortestPathOrder = getNodesInShortestPathOrder(finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('Dijkstra', visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
@@ -145,8 +169,13 @@ export default class PathfindingVisualizer extends Component {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    
+    const startTime = performance.now();
     const visitedNodesInOrder = astar(grid, startNode, finishNode);
     const nodesInShortestPathOrder = getAstarPath(finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('A*', visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
     this.animateAstar(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
@@ -154,8 +183,13 @@ export default class PathfindingVisualizer extends Component {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    
+    const startTime = performance.now();
     const visitedNodesInOrder = bfs(grid, startNode, finishNode);
     const nodesInShortestPathOrder = getBfsPath(finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('BFS', visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
     this.animateBfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
@@ -163,8 +197,13 @@ export default class PathfindingVisualizer extends Component {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    
+    const startTime = performance.now();
     const visitedNodesInOrder = dfs(grid, startNode, finishNode);
     const nodesInShortestPathOrder = getDfsPath(finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('DFS', visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
     this.animateDfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
@@ -172,31 +211,69 @@ export default class PathfindingVisualizer extends Component {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    
+    const startTime = performance.now();
     const visitedNodesInOrder = greedyBestFirst(grid, startNode, finishNode);
     const nodesInShortestPathOrder = getGreedyPath(finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('Greedy Best-First', visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
     this.animateGreedy(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
   render() {
-    const {grid, mouseIsPressed} = this.state;
+    const {grid, mouseIsPressed, algorithmMetrics} = this.state;
 
     return (
       <>
-        <button onClick={() => this.visualizeDijkstra()}>
-          Visualize Dijkstra's Algorithm
-        </button>
-        <button onClick={() => this.visualizeAstar()}>
-          Visualize A* Algorithm
-        </button>
-        <button onClick={() => this.visualizeBfs()}>
-          Visualize BFS Algorithm
-        </button>
-        <button onClick={() => this.visualizeDfs()}>
-          Visualize DFS Algorithm
-        </button>
-        <button onClick={() => this.visualizeGreedy()}>
-          Visualize Greedy Best-First
-        </button>
+        <div className="controls">
+          <button onClick={() => this.visualizeDijkstra()}>
+            Visualize Dijkstra's Algorithm
+          </button>
+          <button onClick={() => this.visualizeAstar()}>
+            Visualize A* Algorithm
+          </button>
+          <button onClick={() => this.visualizeBfs()}>
+            Visualize BFS Algorithm
+          </button>
+          <button onClick={() => this.visualizeDfs()}>
+            Visualize DFS Algorithm
+          </button>
+          <button onClick={() => this.visualizeGreedy()}>
+            Visualize Greedy Best-First
+          </button>
+          <button onClick={() => this.clearMetrics()}>
+            Clear Metrics
+          </button>
+        </div>
+        
+        {algorithmMetrics.length > 0 && (
+          <div className="metrics-container">
+            <h3>Algorithm Performance Comparison</h3>
+            <table className="metrics-table">
+              <thead>
+                <tr>
+                  <th>Algorithm</th>
+                  <th>Nodes Visited</th>
+                  <th>Path Length</th>
+                  <th>Execution Time (ms)</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {algorithmMetrics.map((metric, index) => (
+                  <tr key={index}>
+                    <td>{metric.algorithm}</td>
+                    <td>{metric.nodesVisited}</td>
+                    <td>{metric.pathLength}</td>
+                    <td>{metric.executionTime}</td>
+                    <td>{metric.timestamp}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <div className="grid">
           {grid.map((row, rowIdx) => {
             return (
