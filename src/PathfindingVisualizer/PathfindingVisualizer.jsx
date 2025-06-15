@@ -3,6 +3,7 @@ import Node from './Node/Node';
 import {dijkstra, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 import {astar, getNodesInShortestPathOrder as getAstarPath} from '../algorithms/astar';
 import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs';
+import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
 
 import './PathfindingVisualizer.css';
 
@@ -98,6 +99,22 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  animateDfs(visitedNodesInOrder, nodesInShortestPathOrder) {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      if (i === visitedNodesInOrder.length) {
+        setTimeout(() => {
+          this.animateShortestPath(nodesInShortestPathOrder);
+        }, 10 * i);
+        return;
+      }
+      setTimeout(() => {
+        const node = visitedNodesInOrder[i];
+        document.getElementById(`node-${node.row}-${node.col}`).className =
+          'node node-visited';
+      }, 10 * i);
+    }
+  }
+
   visualizeDijkstra() {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
@@ -125,6 +142,15 @@ export default class PathfindingVisualizer extends Component {
     this.animateBfs(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  visualizeDfs() {
+    const {grid} = this.state;
+    const startNode = grid[START_NODE_ROW][START_NODE_COL];
+    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const visitedNodesInOrder = dfs(grid, startNode, finishNode);
+    const nodesInShortestPathOrder = getDfsPath(finishNode);
+    this.animateDfs(visitedNodesInOrder, nodesInShortestPathOrder);
+  }
+
   render() {
     const {grid, mouseIsPressed} = this.state;
 
@@ -138,6 +164,9 @@ export default class PathfindingVisualizer extends Component {
         </button>
         <button onClick={() => this.visualizeBfs()}>
           Visualize BFS Algorithm
+        </button>
+        <button onClick={() => this.visualizeDfs()}>
+          Visualize DFS Algorithm
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
