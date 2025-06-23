@@ -18,6 +18,12 @@ interface PathfindingVisualizerState {
   grid: Grid;
   mouseIsPressed: boolean;
   algorithmMetrics: AlgorithmMetric[];
+  isDraggingStart: boolean;
+  isDraggingFinish: boolean;
+  startNodeRow: number;
+  startNodeCol: number;
+  finishNodeRow: number;
+  finishNodeCol: number;
 }
 
 export default class PathfindingVisualizer extends Component<{}, PathfindingVisualizerState> {
@@ -27,6 +33,12 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
       grid: [],
       mouseIsPressed: false,
       algorithmMetrics: [],
+      isDraggingStart: false,
+      isDraggingFinish: false,
+      startNodeRow: START_NODE_ROW,
+      startNodeCol: START_NODE_COL,
+      finishNodeRow: FINISH_NODE_ROW,
+      finishNodeCol: FINISH_NODE_COL,
     };
   }
 
@@ -36,18 +48,39 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   handleMouseDown(row: number, col: number): void {
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid, mouseIsPressed: true});
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    
+    if (row === startNodeRow && col === startNodeCol) {
+      this.setState({ isDraggingStart: true, mouseIsPressed: true });
+    } else if (row === finishNodeRow && col === finishNodeCol) {
+      this.setState({ isDraggingFinish: true, mouseIsPressed: true });
+    } else {
+      const newGrid = getNewGridWithWallToggled(grid, row, col);
+      this.setState({ grid: newGrid, mouseIsPressed: true });
+    }
   }
 
   handleMouseEnter(row: number, col: number): void {
-    if (!this.state.mouseIsPressed) return;
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid});
+    const { mouseIsPressed, isDraggingStart, isDraggingFinish, grid } = this.state;
+    
+    if (!mouseIsPressed) return;
+    
+    if (isDraggingStart) {
+      this.moveStartNode(row, col);
+    } else if (isDraggingFinish) {
+      this.moveFinishNode(row, col);
+    } else {
+      const newGrid = getNewGridWithWallToggled(grid, row, col);
+      this.setState({ grid: newGrid });
+    }
   }
 
   handleMouseUp(): void {
-    this.setState({mouseIsPressed: false});
+    this.setState({
+      mouseIsPressed: false,
+      isDraggingStart: false,
+      isDraggingFinish: false,
+    });
   }
 
   animateDijkstra(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
@@ -158,10 +191,53 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     this.setState({algorithmMetrics: []});
   }
 
+  moveStartNode(row: number, col: number): void {
+    const { grid, finishNodeRow, finishNodeCol } = this.state;
+    
+    if (row === finishNodeRow && col === finishNodeCol) return;
+    if (grid[row][col].isWall) return;
+    
+    const newGrid = this.updateNodePositions(grid, row, col, true);
+    this.setState({
+      grid: newGrid,
+      startNodeRow: row,
+      startNodeCol: col,
+    });
+  }
+
+  moveFinishNode(row: number, col: number): void {
+    const { grid, startNodeRow, startNodeCol } = this.state;
+    
+    if (row === startNodeRow && col === startNodeCol) return;
+    if (grid[row][col].isWall) return;
+    
+    const newGrid = this.updateNodePositions(grid, row, col, false);
+    this.setState({
+      grid: newGrid,
+      finishNodeRow: row,
+      finishNodeCol: col,
+    });
+  }
+
+  updateNodePositions(grid: Grid, newRow: number, newCol: number, isStart: boolean): Grid {
+    const { startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const newGrid = grid.map(row => row.map(node => ({ ...node })));
+    
+    if (isStart) {
+      newGrid[startNodeRow][startNodeCol].isStart = false;
+      newGrid[newRow][newCol].isStart = true;
+    } else {
+      newGrid[finishNodeRow][finishNodeCol].isFinish = false;
+      newGrid[newRow][newCol].isFinish = true;
+    }
+    
+    return newGrid;
+  }
+
   visualizeDijkstra(): void {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
     
     const startTime = performance.now();
     const visitedNodesInOrder = dijkstra(grid, startNode, finishNode);
@@ -173,9 +249,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   visualizeAstar(): void {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
     
     const startTime = performance.now();
     const visitedNodesInOrder = astar(grid, startNode, finishNode);
@@ -187,9 +263,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   visualizeBfs(): void {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
     
     const startTime = performance.now();
     const visitedNodesInOrder = bfs(grid, startNode, finishNode);
@@ -201,9 +277,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   visualizeDfs(): void {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
     
     const startTime = performance.now();
     const visitedNodesInOrder = dfs(grid, startNode, finishNode);
@@ -215,9 +291,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   visualizeGreedy(): void {
-    const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
     
     const startTime = performance.now();
     const visitedNodesInOrder = greedyBestFirst(grid, startNode, finishNode);
@@ -342,6 +418,9 @@ const createNode = (col: number, row: number): GridNode => {
 const getNewGridWithWallToggled = (grid: Grid, row: number, col: number): Grid => {
   const newGrid = grid.slice();
   const node = newGrid[row][col];
+  
+  if (node.isStart || node.isFinish) return newGrid;
+  
   const newNode: GridNode = {
     ...node,
     isWall: !node.isWall,

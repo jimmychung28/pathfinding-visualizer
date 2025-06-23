@@ -7,10 +7,20 @@
 
 .node-finish {
   background-color: red;
+  cursor: grab;
+}
+
+.node-finish:active {
+  cursor: grabbing;
 }
 
 .node-start {
   background-color: green;
+  cursor: grab;
+}
+
+.node-start:active {
+  cursor: grabbing;
 }
 
 .node-visited {
