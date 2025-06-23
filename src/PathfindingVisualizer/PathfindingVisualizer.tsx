@@ -6,6 +6,7 @@ import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs'
 import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
 import {greedyBestFirst, getNodesInShortestPathOrder as getGreedyPath} from '../algorithms/greedyBestFirst';
 import {bidirectionalSearch, getNodesInShortestPathOrder as getBidirectionalPath} from '../algorithms/bidirectional';
+import {hierarchicalPathfinding, getNodesInShortestPathOrder as getHierarchicalPath} from '../algorithms/hierarchical';
 import { GridNode, Grid, AlgorithmMetric, TerrainType } from '../types';
 import { getTerrainWeight, getTerrainName } from '../utils/terrain';
 
@@ -193,6 +194,22 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     }
   }
 
+  animateHierarchical(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      if (i === visitedNodesInOrder.length) {
+        setTimeout(() => {
+          this.animateShortestPath(nodesInShortestPathOrder);
+        }, 10 * i);
+        return;
+      }
+      setTimeout(() => {
+        const node = visitedNodesInOrder[i];
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
+      }, 10 * i);
+    }
+  }
+
   recordMetrics(algorithmName: string, visitedNodes: GridNode[], pathNodes: GridNode[], executionTime: number): void {
     const metric: AlgorithmMetric = {
       algorithm: algorithmName,
@@ -338,6 +355,20 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     this.animateBidirectional(result.visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  visualizeHierarchical(): void {
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
+    
+    const startTime = performance.now();
+    const result = hierarchicalPathfinding(grid, startNode, finishNode);
+    const nodesInShortestPathOrder = getHierarchicalPath(result, startNode, finishNode, grid);
+    const endTime = performance.now();
+    
+    this.recordMetrics('Hierarchical Pathfinding', result.visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
+    this.animateHierarchical(result.visitedNodesInOrder, nodesInShortestPathOrder);
+  }
+
   render() {
     const {grid, mouseIsPressed, algorithmMetrics} = this.state;
 
@@ -375,6 +406,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
           </button>
           <button onClick={() => this.visualizeBidirectional()}>
             Visualize Bidirectional Search
+          </button>
+          <button onClick={() => this.visualizeHierarchical()}>
+            Visualize Hierarchical Pathfinding
           </button>
           <button onClick={() => this.clearMetrics()}>
             Clear Metrics
