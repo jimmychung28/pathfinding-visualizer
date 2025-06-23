@@ -210,6 +210,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     }
   }
 
+
   recordMetrics(algorithmName: string, visitedNodes: GridNode[], pathNodes: GridNode[], executionTime: number): void {
     const metric: AlgorithmMetric = {
       algorithm: algorithmName,
@@ -369,8 +370,19 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     this.animateHierarchical(result.visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+
+  hasWeightedTerrain(): boolean {
+    const { grid } = this.state;
+    return grid.some(row => 
+      row.some(node => 
+        node.terrain !== TerrainType.NORMAL && node.terrain !== TerrainType.WALL
+      )
+    );
+  }
+
   render() {
     const {grid, mouseIsPressed, algorithmMetrics} = this.state;
+    const hasWeights = this.hasWeightedTerrain();
 
     return (
       <>
@@ -395,16 +407,32 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
           <button onClick={() => this.visualizeAstar()}>
             Visualize A* Algorithm
           </button>
-          <button onClick={() => this.visualizeBfs()}>
+          <button 
+            onClick={() => this.visualizeBfs()}
+            disabled={hasWeights}
+            title={hasWeights ? "BFS doesn't support weighted terrain" : ""}
+          >
             Visualize BFS Algorithm
           </button>
-          <button onClick={() => this.visualizeDfs()}>
+          <button 
+            onClick={() => this.visualizeDfs()}
+            disabled={hasWeights}
+            title={hasWeights ? "DFS doesn't support weighted terrain" : ""}
+          >
             Visualize DFS Algorithm
           </button>
-          <button onClick={() => this.visualizeGreedy()}>
+          <button 
+            onClick={() => this.visualizeGreedy()}
+            disabled={hasWeights}
+            title={hasWeights ? "Greedy Best-First doesn't support weighted terrain" : ""}
+          >
             Visualize Greedy Best-First
           </button>
-          <button onClick={() => this.visualizeBidirectional()}>
+          <button 
+            onClick={() => this.visualizeBidirectional()}
+            disabled={hasWeights}
+            title={hasWeights ? "Bidirectional Search doesn't support weighted terrain" : ""}
+          >
             Visualize Bidirectional Search
           </button>
           <button onClick={() => this.visualizeHierarchical()}>
