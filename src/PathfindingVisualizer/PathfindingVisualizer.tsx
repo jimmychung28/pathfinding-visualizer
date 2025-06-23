@@ -5,6 +5,7 @@ import {astar, getNodesInShortestPathOrder as getAstarPath} from '../algorithms/
 import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs';
 import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
 import {greedyBestFirst, getNodesInShortestPathOrder as getGreedyPath} from '../algorithms/greedyBestFirst';
+import {bidirectionalSearch, getNodesInShortestPathOrder as getBidirectionalPath} from '../algorithms/bidirectional';
 import { GridNode, Grid, AlgorithmMetric, TerrainType } from '../types';
 import { getTerrainWeight, getTerrainName } from '../utils/terrain';
 
@@ -176,6 +177,22 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     }
   }
 
+  animateBidirectional(visitedNodesInOrder: GridNode[], nodesInShortestPathOrder: GridNode[]): void {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      if (i === visitedNodesInOrder.length) {
+        setTimeout(() => {
+          this.animateShortestPath(nodesInShortestPathOrder);
+        }, 10 * i);
+        return;
+      }
+      setTimeout(() => {
+        const node = visitedNodesInOrder[i];
+        const element = document.getElementById(`node-${node.row}-${node.col}`);
+        if (element) element.className = 'node node-visited';
+      }, 10 * i);
+    }
+  }
+
   recordMetrics(algorithmName: string, visitedNodes: GridNode[], pathNodes: GridNode[], executionTime: number): void {
     const metric: AlgorithmMetric = {
       algorithm: algorithmName,
@@ -307,6 +324,20 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     this.animateGreedy(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  visualizeBidirectional(): void {
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const startNode = grid[startNodeRow][startNodeCol];
+    const finishNode = grid[finishNodeRow][finishNodeCol];
+    
+    const startTime = performance.now();
+    const result = bidirectionalSearch(grid, startNode, finishNode);
+    const nodesInShortestPathOrder = getBidirectionalPath(result, startNode, finishNode);
+    const endTime = performance.now();
+    
+    this.recordMetrics('Bidirectional Search', result.visitedNodesInOrder, nodesInShortestPathOrder, endTime - startTime);
+    this.animateBidirectional(result.visitedNodesInOrder, nodesInShortestPathOrder);
+  }
+
   render() {
     const {grid, mouseIsPressed, algorithmMetrics} = this.state;
 
@@ -341,6 +372,9 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
           </button>
           <button onClick={() => this.visualizeGreedy()}>
             Visualize Greedy Best-First
+          </button>
+          <button onClick={() => this.visualizeBidirectional()}>
+            Visualize Bidirectional Search
           </button>
           <button onClick={() => this.clearMetrics()}>
             Clear Metrics
