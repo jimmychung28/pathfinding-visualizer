@@ -5,7 +5,8 @@ import {astar, getNodesInShortestPathOrder as getAstarPath} from '../algorithms/
 import {bfs, getNodesInShortestPathOrder as getBfsPath} from '../algorithms/bfs';
 import {dfs, getNodesInShortestPathOrder as getDfsPath} from '../algorithms/dfs';
 import {greedyBestFirst, getNodesInShortestPathOrder as getGreedyPath} from '../algorithms/greedyBestFirst';
-import { GridNode, Grid, AlgorithmMetric } from '../types';
+import { GridNode, Grid, AlgorithmMetric, TerrainType } from '../types';
+import { getTerrainWeight, getTerrainName } from '../utils/terrain';
 
 import './PathfindingVisualizer.css';
 
@@ -24,6 +25,7 @@ interface PathfindingVisualizerState {
   startNodeCol: number;
   finishNodeRow: number;
   finishNodeCol: number;
+  selectedTerrain: TerrainType;
 }
 
 export default class PathfindingVisualizer extends Component<{}, PathfindingVisualizerState> {
@@ -39,6 +41,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
       startNodeCol: START_NODE_COL,
       finishNodeRow: FINISH_NODE_ROW,
       finishNodeCol: FINISH_NODE_COL,
+      selectedTerrain: TerrainType.WALL,
     };
   }
 
@@ -48,20 +51,20 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
   }
 
   handleMouseDown(row: number, col: number): void {
-    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol } = this.state;
+    const { grid, startNodeRow, startNodeCol, finishNodeRow, finishNodeCol, selectedTerrain } = this.state;
     
     if (row === startNodeRow && col === startNodeCol) {
       this.setState({ isDraggingStart: true, mouseIsPressed: true });
     } else if (row === finishNodeRow && col === finishNodeCol) {
       this.setState({ isDraggingFinish: true, mouseIsPressed: true });
     } else {
-      const newGrid = getNewGridWithWallToggled(grid, row, col);
+      const newGrid = getNewGridWithTerrainToggled(grid, row, col, selectedTerrain);
       this.setState({ grid: newGrid, mouseIsPressed: true });
     }
   }
 
   handleMouseEnter(row: number, col: number): void {
-    const { mouseIsPressed, isDraggingStart, isDraggingFinish, grid } = this.state;
+    const { mouseIsPressed, isDraggingStart, isDraggingFinish, grid, selectedTerrain } = this.state;
     
     if (!mouseIsPressed) return;
     
@@ -70,7 +73,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     } else if (isDraggingFinish) {
       this.moveFinishNode(row, col);
     } else {
-      const newGrid = getNewGridWithWallToggled(grid, row, col);
+      const newGrid = getNewGridWithTerrainToggled(grid, row, col, selectedTerrain);
       this.setState({ grid: newGrid });
     }
   }
@@ -195,7 +198,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     const { grid, finishNodeRow, finishNodeCol } = this.state;
     
     if (row === finishNodeRow && col === finishNodeCol) return;
-    if (grid[row][col].isWall) return;
+    if (grid[row][col].terrain === TerrainType.WALL) return;
     
     const newGrid = this.updateNodePositions(grid, row, col, true);
     this.setState({
@@ -209,7 +212,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     const { grid, startNodeRow, startNodeCol } = this.state;
     
     if (row === startNodeRow && col === startNodeCol) return;
-    if (grid[row][col].isWall) return;
+    if (grid[row][col].terrain === TerrainType.WALL) return;
     
     const newGrid = this.updateNodePositions(grid, row, col, false);
     this.setState({
@@ -310,6 +313,20 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
     return (
       <>
         <div className="controls">
+          <div className="terrain-selector">
+            <label htmlFor="terrain-select">Terrain: </label>
+            <select 
+              id="terrain-select"
+              value={this.state.selectedTerrain} 
+              onChange={(e) => this.setState({ selectedTerrain: e.target.value as TerrainType })}
+            >
+              {Object.values(TerrainType).map(terrain => (
+                <option key={terrain} value={terrain}>
+                  {getTerrainName(terrain)}
+                </option>
+              ))}
+            </select>
+          </div>
           <button onClick={() => this.visualizeDijkstra()}>
             Visualize Dijkstra's Algorithm
           </button>
@@ -362,7 +379,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall} = node;
+                  const {row, col, isFinish, isStart, isWall, terrain} = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -370,6 +387,7 @@ export default class PathfindingVisualizer extends Component<{}, PathfindingVisu
                       isFinish={isFinish}
                       isStart={isStart}
                       isWall={isWall}
+                      terrain={terrain}
                       mouseIsPressed={mouseIsPressed}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                       onMouseEnter={(row, col) =>
@@ -411,11 +429,13 @@ const createNode = (col: number, row: number): GridNode => {
     heuristic: Infinity,
     isVisited: false,
     isWall: false,
+    terrain: TerrainType.NORMAL,
+    weight: getTerrainWeight(TerrainType.NORMAL),
     previousNode: null,
   };
 };
 
-const getNewGridWithWallToggled = (grid: Grid, row: number, col: number): Grid => {
+const getNewGridWithTerrainToggled = (grid: Grid, row: number, col: number, terrain: TerrainType): Grid => {
   const newGrid = grid.slice();
   const node = newGrid[row][col];
   
@@ -423,7 +443,9 @@ const getNewGridWithWallToggled = (grid: Grid, row: number, col: number): Grid =
   
   const newNode: GridNode = {
     ...node,
-    isWall: !node.isWall,
+    terrain: terrain,
+    weight: getTerrainWeight(terrain),
+    isWall: terrain === TerrainType.WALL,
   };
   newGrid[row][col] = newNode;
   return newGrid;

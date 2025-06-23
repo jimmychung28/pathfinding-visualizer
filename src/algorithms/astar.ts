@@ -38,7 +38,7 @@ function sortNodesByTotalDistance(unvisitedNodes: GridNode[]): void {
 function updateUnvisitedNeighbors(node: GridNode, grid: Grid, finishNode: GridNode): void {
   const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
   for (const neighbor of unvisitedNeighbors) {
-    const tentativeDistance = node.distance + 1;
+    const tentativeDistance = node.distance + neighbor.weight;
     if (tentativeDistance < neighbor.distance) {
       neighbor.distance = tentativeDistance;
       neighbor.totalDistance = tentativeDistance + heuristic(neighbor, finishNode);

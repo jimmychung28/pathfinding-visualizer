@@ -87,3 +87,23 @@
     background-color: rgb(255, 254, 106);
   }
 }
+
+.node-normal {
+  background-color: white;
+}
+
+.node-forest {
+  background-color: #228B22;
+}
+
+.node-water {
+  background-color: #4169E1;
+}
+
+.node-mountain {
+  background-color: #8B4513;
+}
+
+.node-sand {
+  background-color: #F4A460;
+}

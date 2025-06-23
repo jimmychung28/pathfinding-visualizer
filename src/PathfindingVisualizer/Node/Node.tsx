@@ -10,18 +10,20 @@ export default class Node extends Component<NodeProps> {
       isFinish,
       isStart,
       isWall,
+      terrain,
       onMouseDown,
       onMouseEnter,
       onMouseUp,
       row,
     } = this.props;
+    
     const extraClassName = isFinish
       ? 'node-finish'
       : isStart
       ? 'node-start'
       : isWall
       ? 'node-wall'
-      : '';
+      : `node-${terrain}`;
 
     return (
       <div

@@ -1,3 +1,13 @@
+// Terrain types with their movement costs
+export enum TerrainType {
+  NORMAL = 'normal',
+  FOREST = 'forest',
+  WATER = 'water',
+  MOUNTAIN = 'mountain',
+  SAND = 'sand',
+  WALL = 'wall'
+}
+
 // Node interface for the grid
 export interface GridNode {
   col: number;
@@ -10,6 +20,8 @@ export interface GridNode {
   isVisited: boolean;
   isWall: boolean;
   previousNode: GridNode | null;
+  terrain: TerrainType;
+  weight: number;
 }
 
 // Algorithm metrics interface
@@ -28,6 +40,7 @@ export interface NodeProps {
   isFinish: boolean;
   isStart: boolean;
   isWall: boolean;
+  terrain: TerrainType;
   mouseIsPressed: boolean;
   onMouseDown: (row: number, col: number) => void;
   onMouseEnter: (row: number, col: number) => void;
